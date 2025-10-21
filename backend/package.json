@@ -1,25 +1,18 @@
 {
-  "name": "exemplo-backend-nodejs",
+  "name": "parish-backend",
   "version": "1.0.0",
-  "description": "Exemplo simples de backend Node.js com Express para React.",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
-  },
-  "keywords": [
-    "node",
-    "express",
-    "react",
-    "demo"
-  ],
-  "author": "",
-  "license": "ISC",
+  "main": "app.js",
+  "type": "module",
+  "scripts": { "start": "node app.js" },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
-    "express": "^4.18.2"
-  },
-  "devDependencies": {
-    "nodemon": "^3.0.1"
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-validator": "^7.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.2.2",
+    "multer": "^1.4.5-lts.1"
   }
 }
