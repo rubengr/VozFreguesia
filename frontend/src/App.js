@@ -3,6 +3,7 @@ import SubmissionsList from "./pages/SubmissionsList";
 import SubmissionDetails from "./pages/SubmissionDetails";
 import Login from "./pages/Login";
 import NewSubmission from "./pages/NewSubmission";
+import Register from "./pages/Register";
 
 export default function App() {
   return (
@@ -12,6 +13,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/new" element={<NewSubmission />} />
         <Route path="/submission/:id" element={<SubmissionDetails />} />
+        <Route path="/register" element={<Register />} />
       </Routes>
     </BrowserRouter>
   );
