@@ -114,6 +114,7 @@ export default function NewSubmission() {
               onChange={e => setAuthorName(e.target.value)}
               placeholder="Seu nome"
               style={{ padding: 10, borderRadius: 6, border: "1px solid #ccc" }}
+              readOnly
             />
           </label>
           <label style={{ display: "flex", flexDirection: "column", fontWeight: "600" }}>
@@ -124,10 +125,12 @@ export default function NewSubmission() {
               type="email"
               placeholder="Seu email - usado apenas para notificações"
               style={{ padding: 10, borderRadius: 6, border: "1px solid #ccc" }}
+              readOnly
             />
           </label>
         </>
       )}
+
 
       {error && <p style={{ color: "red", fontWeight: "600" }}>{error}</p>}
 

@@ -4,6 +4,7 @@ import SubmissionDetails from "./pages/SubmissionDetails";
 import Login from "./pages/Login";
 import NewSubmission from "./pages/NewSubmission";
 import Register from "./pages/Register";
+import Admin from "./pages/Admin";
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
         <Route path="/new" element={<NewSubmission />} />
         <Route path="/submission/:id" element={<SubmissionDetails />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/admin" element={<Admin />} />
       </Routes>
     </BrowserRouter>
   );
