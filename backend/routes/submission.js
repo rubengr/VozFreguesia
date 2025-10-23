@@ -3,32 +3,53 @@ import multer from 'multer';
 import Submission from '../models/Submission.js';
 import { auth, requireRole } from '../middleware/auth.js';
 import User from '../models/User.js';
+import path from "path";
 
-const upload = multer({ dest: 'uploads/', limits: { fileSize: 10 * 1024 * 1024 } });
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/");
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const ext = path.extname(file.originalname);  // preserva extensão
+    const baseName = path.basename(file.originalname, ext);
+    cb(null, `${baseName}-${uniqueSuffix}${ext}`);
+  }
+});
+
+const upload = multer({ storage });
 const router = express.Router();
 
 // Nova submissão (anónima ou autenticada)
-router.post('/new', upload.array('attachments', 3), async (req, res) => {
-  const { title, description, anonymous, authorName, authorEmail } = req.body;
-  const files = req.files ? req.files.map(f => f.filename) : [];
-  const status = "Pending";
-  const auditTrail = [{
-    action: 'Created',
-    user: anonymous === "true" ? "anonymous" : (authorName || "autenticado"),
-    timestamp: new Date(),
-  }];
-  const sub = new Submission({
-    title,
-    description,
-    attachments: files,
-    authorName: anonymous === "true" ? null : authorName,
-    authorEmail: anonymous === "true" ? null : authorEmail,
-    anonymous: anonymous === "true",
-    status,
-    auditTrail
-  });
-  await sub.save();
-  res.json({ success: true });
+router.post("/new", upload.array("attachments",10), async (req, res) => {
+  try {
+    const { title, description, anonymous, authorName, authorEmail } = req.body;
+    const files = req.files ? req.files.map(f => f.filename) : [];
+    const status = "Pending";
+    const auditTrail = [{
+      action: "Created",
+      user: anonymous === "true" ? "anónimo" : (authorName || "autenticado"),
+      timestamp: new Date(),
+    }];
+
+    const sub = new Submission({
+      title,
+      description,
+      attachments: files,
+      authorName: anonymous === "true" ? null : authorName,
+      authorEmail: anonymous === "true" ? null : authorEmail,
+      anonymous: anonymous === "true",
+      status,
+      auditTrail,
+    });
+
+    await sub.save();
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Erro ao salvar submissão:", error);
+    res.status(500).json({ error: "Erro ao criar submissão" });
+  }
 });
 
 // Listagem pública (por ordem reversa cronológica)

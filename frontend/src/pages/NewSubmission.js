@@ -83,7 +83,7 @@ export default function NewSubmission() {
       </label>
 
       <label style={{ fontWeight: "600" }}>
-        Anexar arquivos (máx. 3 arquivos, JPG/PNG/PDF/DOCX, até 10MB cada):
+        Anexar arquivos (máx. 10 arquivos, JPG/PNG/PDF/DOCX, até 10MB cada):
         <input
           type="file"
           multiple

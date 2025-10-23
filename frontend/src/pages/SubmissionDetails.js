@@ -2,6 +2,11 @@ import { useParams } from "react-router-dom";
 import { useContext, useState, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
 import axios from "axios";
+import Lightbox from "yet-another-react-lightbox";
+import "yet-another-react-lightbox/styles.css";
+import Inline from "yet-another-react-lightbox/plugins/inline";
+import Fullscreen from "yet-another-react-lightbox/plugins/fullscreen";
+import Video from "yet-another-react-lightbox/plugins/video";
 
 export default function SubmissionDetails() {
   const { id } = useParams();
@@ -11,6 +16,8 @@ export default function SubmissionDetails() {
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [open, setOpen] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     setLoading(true);
@@ -54,35 +61,78 @@ export default function SubmissionDetails() {
   if (error) return <div style={{ color: "red", textAlign: "center", marginTop: 50 }}>{error}</div>;
   if (!sub) return <div style={{ textAlign: "center", marginTop: 50 }}>Submissão não encontrada.</div>;
 
-  return (
-    <div style={{
-      maxWidth: 800,
-      margin: "2rem auto",
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-      padding: "0 1rem",
-      backgroundColor: "#fefefe",
-      borderRadius: 8,
-      boxShadow: "0 4px 14px rgba(0,0,0,0.1)"
-    }}>
-      <h1 style={{ borderBottom: "2px solid #2563eb", paddingBottom: "0.5rem", marginBottom: "1rem" }}>
-        {sub.title}
-      </h1>
-      <p style={{ fontSize: "1.1rem", color: "#333" }}>{sub.description}</p>
-      <div style={{ margin: "1rem 0" }}>
-        {sub.attachments.length > 0 && <strong>Anexos:</strong>}
-        {sub.attachments.map(file =>
-          <div key={file} style={{ margin: "0.25rem 0" }}>
-            <a
-              href={`http://localhost:4000/uploads/${file}`}
-              target="_blank"
-              rel="noreferrer"
-              style={{ color: "#2563eb", textDecoration: "underline" }}
-            >
-              Ver anexo
-            </a>
-          </div>
-        )}
+  // Prepare os slides para imagens e vídeos para o Lightbox
+  const slides = sub?.attachments.map(file => {
+      const url = `http://localhost:4000/uploads/${file}`;
+      const ext = file.split('.').pop().toLowerCase();
+    
+      if (["mp4", "webm", "ogg"].includes(ext)) {
+        return {
+          type: "video",
+          width: 1280,    // ajustar se souber dimensões reais
+          height: 720,
+          sources: [
+            { src: url, type: `video/${ext}` }
+          ]
+        };
+      }
+      // Para imagens, mantém simples:
+      return { type: "image", src: url };
+    }) || [];
+      // Separar os arquivos que não serão exibidos na galeria para mostrar como links para download
+      const filesForDownload = sub?.attachments
+        .filter(file => {
+          const ext = file.split('.').pop().toLowerCase();
+          return !["mp4", "webm", "ogg", "jpg", "jpeg", "png", "gif", "webp"].includes(ext);
+        }) || [];
+
+      return (
+        <div style={{
+          maxWidth: 800,
+          margin: "2rem auto",
+          fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+          padding: "0 1rem",
+          backgroundColor: "#fefefe",
+          borderRadius: 8,
+          boxShadow: "0 4px 14px rgba(0,0,0,0.1)"
+        }}>
+          <h1 style={{ borderBottom: "2px solid #2563eb", paddingBottom: "0.5rem", marginBottom: "1rem" }}>
+            {sub.title}
+          </h1>
+          <p style={{ fontSize: "1.1rem", color: "#333" }}>{sub.description}</p>
+          {slides.length > 0 && (
+      <Lightbox
+        open={open}
+        close={() => setOpen(false)}
+        slides={slides}
+        plugins={[Inline, Fullscreen, Video]} 
+        inline={{
+          style: {
+            width: "100%",
+            height: "80vh",
+            maxWidth: "960px",
+            margin: "auto",
+          }
+        }}
+      />
+    )}
+
+    {filesForDownload.length > 0 && (
+      <div style={{ marginTop: 20 }}>
+        <strong>Outros ficheiros:</strong>
+        {filesForDownload.map(file => {
+          const url = `http://localhost:4000/uploads/${file}`;
+          return (
+            <div key={file} style={{ marginTop: 10 }}>
+              <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: "#2563eb" }}>
+                Ver/Descarregar {file}
+              </a>
+            </div>
+          );
+        })}
       </div>
+    )}
+     
       <p style={{ fontWeight: "600", marginTop: 10 }}>
         Status: <span style={{ color: {
           Pending: "#f59e0b",

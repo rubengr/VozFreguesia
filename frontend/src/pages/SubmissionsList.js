@@ -49,6 +49,29 @@ export default function SubmissionsList() {
     }}>
       <h1 style={{ textAlign:"center", marginBottom:"1rem" }}>Voz da Freguesia - Submissões</h1>
 
+      {user?.role === "admin" && (
+        <div style={{ textAlign: "center", marginBottom: "1rem" }}>
+          <Link
+            to="/admin"
+            style={{
+              display: "inline-block",
+              padding: "0.6rem 1.4rem",
+              backgroundColor: "#10b981",
+              color: "white",
+              borderRadius: 8,
+              textDecoration: "none",
+              fontWeight: "700",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+              transition: "background-color 0.3s ease"
+            }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = "#059669"}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = "#10b981"}
+          >
+            Painel de Administração
+          </Link>
+        </div>
+      )}
+
       <div style={{ display: "flex", justifyContent: "center", gap: "1rem", marginBottom: "1rem", flexWrap: "wrap" }}>
         {["all", "Pending", "In Progress", "Resolved", "Rejected"].map(status => (
           <button
