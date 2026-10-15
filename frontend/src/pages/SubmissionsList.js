@@ -1,7 +1,22 @@
+/**
+ * Voz da Freguesia - Frontend
+ * ---------------------------------------------------------------------------
+ * Página inicial: lista pública de submissões, com filtro por estado. O
+ * backend já exclui as rejeitadas para quem não tem privilégio (esta
+ * página só decide se MOSTRA o botão de filtro "Rejeitada").
+ *
+ * Copyright (c) MicroSystems
+ * Author: Rúben Rodrigues
+ * ---------------------------------------------------------------------------
+ */
+
 import { useState, useEffect, useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { AuthContext } from "../context/AuthContext";
+
+// Só quem gere a freguesia (não um residente comum) vê submissões rejeitadas
+const PRIVILEGED_ROLES = ["president", "admin", "assembly"];
 
 export default function SubmissionsList() {
   const { user } = useContext(AuthContext);
@@ -9,6 +24,7 @@ export default function SubmissionsList() {
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const podeVerRejeitadas = user && PRIVILEGED_ROLES.includes(user.role);
 
   useEffect(() => {
     setLoading(true);
@@ -41,55 +57,21 @@ export default function SubmissionsList() {
   const filtered = filter === "all" ? subs : subs.filter(s => s.status === filter);
 
   return (
-    <div style={{
-      maxWidth: 900,
-      margin: "2rem auto",
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-      padding: "0 1rem"
-    }}>
-      <h1 style={{ textAlign:"center", marginBottom:"1rem" }}>Voz da Freguesia - Submissões</h1>
+    <div className="page">
+      <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>Voz da Freguesia</h1>
 
-      {user?.role === "admin" && (
-        <div style={{ textAlign: "center", marginBottom: "1rem" }}>
-          <Link
-            to="/admin"
-            style={{
-              display: "inline-block",
-              padding: "0.6rem 1.4rem",
-              backgroundColor: "#10b981",
-              color: "white",
-              borderRadius: 8,
-              textDecoration: "none",
-              fontWeight: "700",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-              transition: "background-color 0.3s ease"
-            }}
-            onMouseEnter={e => e.currentTarget.style.backgroundColor = "#059669"}
-            onMouseLeave={e => e.currentTarget.style.backgroundColor = "#10b981"}
-          >
-            Painel de Administração
-          </Link>
-        </div>
-      )}
-
-      <div style={{ display: "flex", justifyContent: "center", gap: "1rem", marginBottom: "1rem", flexWrap: "wrap" }}>
-        {["all", "Pending", "In Progress", "Resolved", "Rejected"].map(status => (
+      <div style={{ display: "flex", justifyContent: "center", gap: "0.6rem", marginBottom: "1.5rem", flexWrap: "wrap" }}>
+        {["all", "Pending", "In Progress", "Resolved", ...(podeVerRejeitadas ? ["Rejected"] : [])].map(status => (
           <button
             key={status}
             onClick={() => setFilter(status)}
+            className="btn btn-sm"
             style={{
-              padding: "0.5rem 1rem",
-              borderRadius: 20,
               border: "2px solid",
-              borderColor: filter === status ? "#2563eb" : "#ccc",
+              borderColor: filter === status ? "#2563eb" : "#e2e8f0",
               backgroundColor: filter === status ? "#2563eb" : "white",
-              color: filter === status ? "white" : "#333",
-              fontWeight: "600",
-              cursor: "pointer",
-              textTransform: "capitalize",
-              minWidth: 90,
-              boxShadow: filter === status ? "0 0 8px #2563ebaa" : "none",
-              transition: "all 0.3s ease"
+              color: filter === status ? "white" : "#334155",
+              minWidth: 90
             }}
           >
             {status === "all" ? "Todas" : statusLabels[status]}
@@ -97,105 +79,48 @@ export default function SubmissionsList() {
         ))}
       </div>
 
-      <div style={{ textAlign: "right", marginBottom: "1rem" }}>
-        <Link
-          to="/new"
-          style={{
-            fontWeight: "600",
-            backgroundColor: "#2563eb",
-            color: "white",
-            padding: "0.5rem 1rem",
-            borderRadius: 6,
-            textDecoration: "none"
-          }}
-        >
-          Nova submissão
-        </Link>
-        {!user && (
-          <>
-            <Link
-              to="/login"
-              style={{
-                marginLeft: "1rem",
-                fontWeight: "600",
-                color: "#2563eb",
-                padding: "0.5rem 1rem",
-                borderRadius: 6,
-                textDecoration: "none",
-                border: "2px solid #2563eb"
-              }}
-            >
-              Login
-            </Link>
-            <Link
-              to="/register"
-              style={{
-                marginLeft: "1rem",
-                fontWeight: "600",
-                color: "#10b981",
-                padding: "0.5rem 1rem",
-                borderRadius: 6,
-                textDecoration: "none",
-                border: "2px solid #10b981"
-              }}
-            >
-              Registar
-            </Link>
-          </>
-        )}
-      </div>
-
-      {loading && <p style={{textAlign: "center"}}>A carregar submissões...</p>}
-      {error && <p style={{color: "red", textAlign: "center"}}>{error}</p>}
+      {loading && <p style={{ textAlign: "center" }}>A carregar submissões...</p>}
+      {error && <p className="error-text" style={{ textAlign: "center" }}>{error}</p>}
 
       {!loading && filtered.length === 0 && (
-        <p style={{textAlign: "center", fontStyle: "italic"}}>
+        <p style={{ textAlign: "center", fontStyle: "italic", color: "#64748b" }}>
           Nenhuma submissão encontrada para o filtro selecionado.
         </p>
       )}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 15 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         {filtered.map(sub => (
           <Link
             to={`/submission/${sub._id}`}
             key={sub._id}
+            className="card"
             style={{
-              padding: "1rem",
-              border: "1.5px solid #ddd",
-              borderRadius: 8,
               textDecoration: "none",
               color: "#111",
-              backgroundColor: "#fafafa",
-              boxShadow: "1px 1px 6px #ccc",
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              transition: "box-shadow 0.3s ease",
+              transition: "box-shadow 0.2s ease, transform 0.1s ease"
             }}
-            onMouseEnter={e => e.currentTarget.style.boxShadow = "3px 3px 12px #bbb"}
-            onMouseLeave={e => e.currentTarget.style.boxShadow = "1px 1px 6px #ccc"}
+            onMouseEnter={e => { e.currentTarget.style.boxShadow = "var(--shadow-hover)"; }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = "var(--shadow)"; }}
           >
             <div>
               <h3 style={{ margin: 0 }}>{sub.title}</h3>
-              <p style={{ margin: "0.25rem 0", fontWeight: "600", color: "#555" }}>
+              <p style={{ margin: "0.25rem 0", fontWeight: 600, color: "#64748b", fontSize: "0.9rem" }}>
                 Criado a {new Date(sub.createdAt).toLocaleString()}
               </p>
+              {/* Sinaliza, só a quem tem privilégio, as submissões com proposta
+                  de rejeição do presidente ainda por confirmar */}
+              {sub.status === "Pending" && sub.rejectionProposedBy && podeVerRejeitadas && (
+                <p style={{ margin: "0.25rem 0 0", fontWeight: 600, color: "#92400e", fontSize: "0.8rem" }}>
+                  ⚠ Rejeição proposta pelo presidente — aguarda confirmação da assembleia
+                </p>
+              )}
             </div>
-            <div
-              style={{
-                padding: "0.35rem 1rem",
-                borderRadius: 20,
-                color: "white",
-                backgroundColor: statusColors[sub.status] || "#999",
-                fontWeight: "700",
-                textTransform: "uppercase",
-                fontSize: "0.85rem",
-                minWidth: 110,
-                textAlign: "center"
-              }}
-            >
+            <span className="badge" style={{ backgroundColor: statusColors[sub.status] || "#999" }}>
               {statusLabels[sub.status]}
-            </div>
+            </span>
           </Link>
         ))}
       </div>

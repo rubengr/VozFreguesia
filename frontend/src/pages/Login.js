@@ -1,6 +1,16 @@
+/**
+ * Voz da Freguesia - Frontend
+ * ---------------------------------------------------------------------------
+ * Página de login. Delega a autenticação propriamente dita ao AuthContext.
+ *
+ * Copyright (c) MicroSystems
+ * Author: Rúben Rodrigues
+ * ---------------------------------------------------------------------------
+ */
+
 import { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function Login() {
   const { login } = useContext(AuthContext);
@@ -25,65 +35,46 @@ export default function Login() {
   };
 
   return (
-    <form onSubmit={handleLogin} style={{
-      maxWidth: 400,
-      margin: "4rem auto",
-      padding: "2rem",
-      boxShadow: "0 4px 14px rgba(0,0,0,0.1)",
-      borderRadius: 8,
-      backgroundColor: "#fefefe",
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-      display: "flex",
-      flexDirection: "column",
-      gap: "1rem"
-    }}>
-      <h1 style={{ marginBottom: "1.5rem", textAlign: "center", color: "#2563eb" }}>Entrar</h1>
+    <div className="page-narrow">
+      <form onSubmit={handleLogin} className="card" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+        <h1 style={{ marginTop: 0, marginBottom: "0.5rem", textAlign: "center", color: "var(--color-primary)" }}>Entrar</h1>
 
-      <label style={{ fontWeight: "600", display: "flex", flexDirection: "column" }}>
-        Email:
-        <input
-          type="email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          required
-          placeholder="Seu email"
-          style={{ padding: 10, fontSize: "1rem", borderRadius: 6, border: "1px solid #ccc" }}
-          autoComplete="username"
-        />
-      </label>
+        <div className="field">
+          <label className="label">Email</label>
+          <input
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            required
+            placeholder="Seu email"
+            className="input"
+            autoComplete="username"
+          />
+        </div>
 
-      <label style={{ fontWeight: "600", display: "flex", flexDirection: "column" }}>
-        Senha:
-        <input
-          type="password"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          required
-          placeholder="Sua senha"
-          style={{ padding: 10, fontSize: "1rem", borderRadius: 6, border: "1px solid #ccc" }}
-          autoComplete="current-password"
-        />
-      </label>
+        <div className="field">
+          <label className="label">Senha</label>
+          <input
+            type="password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            required
+            placeholder="Sua senha"
+            className="input"
+            autoComplete="current-password"
+          />
+        </div>
 
-      {error && <p style={{ color: "red", fontWeight: "600" }}>{error}</p>}
+        {error && <p className="error-text">{error}</p>}
 
-      <button
-        type="submit"
-        disabled={loading}
-        style={{
-          padding: "0.75rem",
-          fontWeight: "700",
-          fontSize: "1.1rem",
-          backgroundColor: loading ? "#93c5fd" : "#2563eb",
-          color: "white",
-          border: "none",
-          borderRadius: 6,
-          cursor: loading ? "not-allowed" : "pointer",
-          transition: "background-color 0.3s ease"
-        }}
-      >
-        {loading ? "Entrando..." : "Entrar"}
-      </button>
-    </form>
+        <button type="submit" disabled={loading} className="btn btn-primary" style={{ width: "100%" }}>
+          {loading ? "Entrando..." : "Entrar"}
+        </button>
+
+        <Link to="/forgot-password" style={{ textAlign: "center", fontSize: "0.9rem", color: "var(--color-primary)" }}>
+          Esqueci-me da password
+        </Link>
+      </form>
+    </div>
   );
 }

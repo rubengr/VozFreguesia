@@ -1,3 +1,14 @@
+/**
+ * Voz da Freguesia - Frontend
+ * ---------------------------------------------------------------------------
+ * Página de registo público. Cria sempre uma conta de residente (fregues);
+ * outros papéis só podem ser atribuídos depois por um administrador.
+ *
+ * Copyright (c) MicroSystems
+ * Author: Rúben Rodrigues
+ * ---------------------------------------------------------------------------
+ */
+
 import { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -32,99 +43,76 @@ export default function Register() {
       // Opcional: login automático após registo
       await login(email, password);
       navigate("/");
-    } catch {
-      setError("Erro ao registrar. Por favor tente novamente.");
+    } catch (err) {
+      setError(err.response?.data?.error || "Erro ao registrar. Por favor tente novamente.");
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <form onSubmit={handleRegister} style={{
-      maxWidth: 400,
-      margin: "4rem auto",
-      padding: "2rem",
-      boxShadow: "0 4px 14px rgba(0,0,0,0.1)",
-      borderRadius: 8,
-      backgroundColor: "#fefefe",
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-      display: "flex",
-      flexDirection: "column",
-      gap: "1rem"
-    }}>
-      <h1 style={{ marginBottom: "1.5rem", textAlign: "center", color: "#2563eb" }}>Criar Conta</h1>
+    <div className="page-narrow">
+      <form onSubmit={handleRegister} className="card" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+        <h1 style={{ marginTop: 0, marginBottom: "0.5rem", textAlign: "center", color: "var(--color-primary)" }}>Criar Conta</h1>
 
-      <label style={{ fontWeight: "600", display: "flex", flexDirection: "column" }}>
-        Nome:
-        <input
-          type="text"
-          value={name}
-          onChange={e => setName(e.target.value)}
-          required
-          placeholder="Seu nome completo"
-          style={{ padding: 10, fontSize: "1rem", borderRadius: 6, border: "1px solid #ccc" }}
-          autoComplete="name"
-        />
-      </label>
+        <div className="field">
+          <label className="label">Nome</label>
+          <input
+            type="text"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            required
+            placeholder="Seu nome completo"
+            className="input"
+            autoComplete="name"
+          />
+        </div>
 
-      <label style={{ fontWeight: "600", display: "flex", flexDirection: "column" }}>
-        Email:
-        <input
-          type="email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          required
-          placeholder="Seu email"
-          style={{ padding: 10, fontSize: "1rem", borderRadius: 6, border: "1px solid #ccc" }}
-          autoComplete="email"
-        />
-      </label>
+        <div className="field">
+          <label className="label">Email</label>
+          <input
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            required
+            placeholder="Seu email"
+            className="input"
+            autoComplete="email"
+          />
+        </div>
 
-      <label style={{ fontWeight: "600", display: "flex", flexDirection: "column" }}>
-        Senha:
-        <input
-          type="password"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          required
-          placeholder="Senha"
-          style={{ padding: 10, borderRadius: 6, border: "1px solid #ccc" }}
-          autoComplete="new-password"
-        />
-      </label>
+        <div className="field">
+          <label className="label">Senha</label>
+          <input
+            type="password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            required
+            placeholder="Senha"
+            className="input"
+            autoComplete="new-password"
+          />
+        </div>
 
-      <label style={{ fontWeight: "600", display: "flex", flexDirection: "column" }}>
-        Confirmar Senha:
-        <input
-          type="password"
-          value={passwordConfirm}
-          onChange={e => setPasswordConfirm(e.target.value)}
-          required
-          placeholder="Confirme a senha"
-          style={{ padding: 10, borderRadius: 6, border: "1px solid #ccc" }}
-          autoComplete="new-password"
-        />
-      </label>
+        <div className="field">
+          <label className="label">Confirmar Senha</label>
+          <input
+            type="password"
+            value={passwordConfirm}
+            onChange={e => setPasswordConfirm(e.target.value)}
+            required
+            placeholder="Confirme a senha"
+            className="input"
+            autoComplete="new-password"
+          />
+        </div>
 
-      {error && <p style={{ color: "red", fontWeight: "600" }}>{error}</p>}
+        {error && <p className="error-text">{error}</p>}
 
-      <button
-        type="submit"
-        disabled={submitting}
-        style={{
-          padding: "0.75rem",
-          fontWeight: "700",
-          fontSize: "1.1rem",
-          backgroundColor: submitting ? "#93c5fd" : "#2563eb",
-          color: "white",
-          border: "none",
-          borderRadius: 6,
-          cursor: submitting ? "not-allowed" : "pointer",
-          transition: "background-color 0.3s ease"
-        }}
-      >
-        {submitting ? "Registrando..." : "Registrar"}
-      </button>
-    </form>
+        <button type="submit" disabled={submitting} className="btn btn-primary" style={{ width: "100%" }}>
+          {submitting ? "Registrando..." : "Registrar"}
+        </button>
+      </form>
+    </div>
   );
 }

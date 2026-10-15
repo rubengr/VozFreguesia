@@ -24,3 +24,8 @@ logs
 
 # Environment variables
 .env*
+
+# Ficheiros enviados pelos utilizadores (incluindo os gerados pelo seed) -
+# conteúdo de runtime, nunca deve ir para o repositório
+backend/uploads/*
+!backend/uploads/.gitkeep

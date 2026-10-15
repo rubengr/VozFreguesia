@@ -1,19 +1,34 @@
-import { useState, useContext } from "react";
+/**
+ * Voz da Freguesia - Frontend
+ * ---------------------------------------------------------------------------
+ * Formulário de criação de uma nova submissão. Se o utilizador estiver
+ * autenticado, nome/email vêm automaticamente da conta (só editáveis ao
+ * desativar o anonimato); sem sessão, a submissão é sempre anónima.
+ *
+ * Copyright (c) MicroSystems
+ * Author: Rúben Rodrigues
+ * ---------------------------------------------------------------------------
+ */
+
+import { useState, useContext, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 export default function NewSubmission() {
-  const { user } = useContext(AuthContext);
+  const { user, checkingSession } = useContext(AuthContext);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [files, setFiles] = useState([]);
-  const [anonymous, setAnonymous] = useState(!user);
-  const [authorName, setAuthorName] = useState(user?.name || '');
-  const [authorEmail, setAuthorEmail] = useState(user?.email || '');
+  const [anonymous, setAnonymous] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+
+  // Só decidimos o valor por omissão do anónimo depois de sabermos se há sessão ativa
+  useEffect(() => {
+    if (!checkingSession) setAnonymous(!user);
+  }, [checkingSession, user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,9 +43,9 @@ export default function NewSubmission() {
       form.append('title', title);
       form.append('description', description);
       form.append('anonymous', anonymous);
-      if (!anonymous) {
-        form.append('authorName', authorName);
-        form.append('authorEmail', authorEmail);
+      if (!anonymous && user) {
+        form.append('authorName', user.name);
+        form.append('authorEmail', user.email);
       }
       Array.from(files).forEach(f => form.append('attachments', f));
       await axios.post("http://localhost:4000/api/submissions/new", form, { withCredentials: true });
@@ -42,116 +57,82 @@ export default function NewSubmission() {
     }
   };
 
+  if (checkingSession) {
+    return <div className="page"><p>A carregar...</p></div>;
+  }
+
   return (
-    <form onSubmit={handleSubmit} style={{
-      maxWidth: 700,
-      padding: "2rem",
-      margin: "2rem auto",
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-      backgroundColor: "#fefefe",
-      boxShadow: "0 3px 10px rgba(0,0,0,0.1)",
-      borderRadius: 8,
-      display: "flex",
-      flexDirection: "column",
-      gap: "1rem"
-    }}>
-      <h1 style={{ borderBottom: "3px solid #2563eb", paddingBottom: "0.5rem", marginBottom: "1rem" }}>
-        Nova Submissão
-      </h1>
+    <div className="page-narrow" style={{ maxWidth: 640 }}>
+      <form onSubmit={handleSubmit} className="card" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+        <h1 style={{ marginTop: 0, borderBottom: "3px solid var(--color-primary)", paddingBottom: "0.5rem", marginBottom: "0.5rem" }}>
+          Nova Submissão
+        </h1>
 
-      <label style={{ display: "flex", flexDirection: "column", fontWeight: "600" }}>
-        Título:
-        <input
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-          required
-          style={{ padding: 10, fontSize: "1rem", borderRadius: 6, border: "1px solid #ccc" }}
-          placeholder="Digite o título da sua submissão"
-        />
-      </label>
-
-      <label style={{ display: "flex", flexDirection: "column", fontWeight: "600" }}>
-        Descrição:
-        <textarea
-          value={description}
-          onChange={e => setDescription(e.target.value)}
-          required
-          rows={6}
-          style={{ padding: 10, fontSize: "1rem", borderRadius: 6, border: "1px solid #ccc", resize: "vertical" }}
-          placeholder="Descreva detalhadamente a sua questão, sugestão ou reclamação"
-        />
-      </label>
-
-      <label style={{ fontWeight: "600" }}>
-        Anexar arquivos (máx. 10 arquivos, JPG/PNG/PDF/DOCX, até 10MB cada):
-        <input
-          type="file"
-          multiple
-          accept=".jpg,.jpeg,.png,.pdf,.docx"
-          onChange={e => setFiles([...e.target.files])}
-          style={{ marginTop: 6 }}
-        />
-      </label>
-
-      {user && (
-        <label style={{ marginTop: "1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+        <div className="field">
+          <label className="label">Título</label>
           <input
-            type="checkbox"
-            checked={anonymous}
-            onChange={e => setAnonymous(e.target.checked)}
-            style={{ width: 18, height: 18 }}
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+            required
+            className="input"
+            placeholder="Digite o título da sua submissão"
           />
-          Submissão anónima
-        </label>
-      )}
+        </div>
 
-      {user && !anonymous && (
-        <>
-          <label style={{ display: "flex", flexDirection: "column", fontWeight: "600" }}>
-            Nome:
+        <div className="field">
+          <label className="label">Descrição</label>
+          <textarea
+            value={description}
+            onChange={e => setDescription(e.target.value)}
+            required
+            rows={6}
+            className="input"
+            style={{ resize: "vertical" }}
+            placeholder="Descreva detalhadamente a sua questão, sugestão ou reclamação"
+          />
+        </div>
+
+        <div className="field">
+          <label className="label">Anexar arquivos (máx. 10 arquivos, JPG/PNG/PDF/DOCX, até 10MB cada)</label>
+          <input
+            type="file"
+            multiple
+            accept=".jpg,.jpeg,.png,.pdf,.docx"
+            onChange={e => setFiles([...e.target.files])}
+          />
+        </div>
+
+        {user && (
+          <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontWeight: 600 }}>
             <input
-              value={authorName}
-              onChange={e => setAuthorName(e.target.value)}
-              placeholder="Seu nome"
-              style={{ padding: 10, borderRadius: 6, border: "1px solid #ccc" }}
-              readOnly
+              type="checkbox"
+              checked={anonymous}
+              onChange={e => setAnonymous(e.target.checked)}
+              style={{ width: 18, height: 18 }}
             />
+            Submissão anónima
           </label>
-          <label style={{ display: "flex", flexDirection: "column", fontWeight: "600" }}>
-            Email:
-            <input
-              value={authorEmail}
-              onChange={e => setAuthorEmail(e.target.value)}
-              type="email"
-              placeholder="Seu email - usado apenas para notificações"
-              style={{ padding: 10, borderRadius: 6, border: "1px solid #ccc" }}
-              readOnly
-            />
-          </label>
-        </>
-      )}
+        )}
 
+        {user && !anonymous && (
+          <>
+            <div className="field">
+              <label className="label">Nome</label>
+              <input value={user.name} className="input" readOnly />
+            </div>
+            <div className="field">
+              <label className="label">Email</label>
+              <input value={user.email} type="email" className="input" readOnly />
+            </div>
+          </>
+        )}
 
-      {error && <p style={{ color: "red", fontWeight: "600" }}>{error}</p>}
+        {error && <p className="error-text">{error}</p>}
 
-      <button
-        type="submit"
-        disabled={submitting}
-        style={{
-          marginTop: "1rem",
-          padding: "0.75rem",
-          backgroundColor: submitting ? "#93c5fd" : "#2563eb",
-          color: "white",
-          border: "none",
-          borderRadius: 6,
-          fontSize: "1.1rem",
-          fontWeight: "700",
-          cursor: submitting ? "not-allowed" : "pointer",
-          transition: "background-color 0.3s ease"
-        }}
-      >
-        {submitting ? "Enviando..." : "Enviar submissão"}
-      </button>
-    </form>
+        <button type="submit" disabled={submitting} className="btn btn-primary" style={{ width: "100%" }}>
+          {submitting ? "Enviando..." : "Enviar submissão"}
+        </button>
+      </form>
+    </div>
   );
 }
