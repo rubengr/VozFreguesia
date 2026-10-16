@@ -80,7 +80,8 @@ router.post('/login', async (req, res) => {
   if (!user || !(await bcrypt.compare(password, user.password)))
     return res.status(401).json({ error: "Email ou password inválidos" });
   const token = jwt.sign({ id: user._id, role: user.role, name: user.name, email: user.email }, process.env.JWT_SECRET);
-  res.cookie('token', token, { httpOnly: true });
+  // Em produção (HTTPS) o cookie só deve viajar em pedidos seguros
+  res.cookie('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
   res.json({ success: true, id: user._id, role: user.role, name: user.name, email: user.email });
 });
 

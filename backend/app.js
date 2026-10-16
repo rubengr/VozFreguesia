@@ -51,9 +51,10 @@ const app = express();
 // Interpreta o corpo dos pedidos como JSON (ex: formulários de login/registo)
 app.use(express.json());
 
-// Só o frontend em localhost:3000 pode chamar esta API, e os cookies de
-// sessão (JWT) são permitidos nesses pedidos (credentials: true).
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+// Só o frontend configurado em FRONTEND_URL (localhost:3000 em desenvolvimento)
+// pode chamar esta API, e os cookies de sessão (JWT) são permitidos nesses
+// pedidos (credentials: true).
+app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:3000', credentials: true }));
 
 // Permite ler o cookie "token" (sessão) nos pedidos recebidos.
 app.use(cookieParser());

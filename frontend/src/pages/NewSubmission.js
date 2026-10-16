@@ -13,6 +13,7 @@
 import { useState, useContext, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
 import axios from "axios";
+import { API_URL } from "../config";
 import { useNavigate } from "react-router-dom";
 
 export default function NewSubmission() {
@@ -48,7 +49,7 @@ export default function NewSubmission() {
         form.append('authorEmail', user.email);
       }
       Array.from(files).forEach(f => form.append('attachments', f));
-      await axios.post("http://localhost:4000/api/submissions/new", form, { withCredentials: true });
+      await axios.post(`${API_URL}/api/submissions/new`, form, { withCredentials: true });
       navigate("/");
     } catch {
       setError("Erro ao enviar submissão. Tente novamente.");

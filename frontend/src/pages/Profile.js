@@ -13,6 +13,7 @@ import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_URL } from "../config";
 
 const roleLabels = {
   resident: "Residente",
@@ -40,7 +41,7 @@ export default function Profile() {
       navigate("/login");
       return;
     }
-    axios.get("http://localhost:4000/api/auth/profile", { withCredentials: true })
+    axios.get(`${API_URL}/api/auth/profile`, { withCredentials: true })
       .then(res => {
         setProfile(res.data);
         setLoading(false);
@@ -64,7 +65,7 @@ export default function Profile() {
     }
     setSaving(true);
     try {
-      await axios.post("http://localhost:4000/api/auth/change-password", {
+      await axios.post(`${API_URL}/api/auth/change-password`, {
         currentPassword,
         newPassword
       }, { withCredentials: true });

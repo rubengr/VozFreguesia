@@ -13,6 +13,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { API_URL } from "../config";
 
 const roleLabels = {
   resident: "Residente",
@@ -41,7 +42,7 @@ export default function AdminUsers() {
   const [createUserError, setCreateUserError] = useState(null);
 
   useEffect(() => {
-    axios.get("http://localhost:4000/api/admin/users", { withCredentials: true })
+    axios.get(`${API_URL}/api/admin/users`, { withCredentials: true })
       .then(res => {
         setUsers(res.data);
         setLoading(false);
@@ -64,7 +65,7 @@ export default function AdminUsers() {
     const novaRole = pendingRoles[userId];
     if (!novaRole) return;
     setSavingRoleId(userId);
-    axios.post("http://localhost:4000/api/admin/set-role", { userId, role: novaRole }, { withCredentials: true })
+    axios.post(`${API_URL}/api/admin/set-role`, { userId, role: novaRole }, { withCredentials: true })
       .then(() => {
         setUsers(users.map(u => u._id === userId ? { ...u, role: novaRole } : u));
         cancelarRolePendente(userId);
@@ -101,7 +102,7 @@ export default function AdminUsers() {
     setUpdatingPasswordId(userId);
     setPasswordError(null);
 
-    axios.post("http://localhost:4000/api/admin/change-password", { userId, password: newPassword }, { withCredentials: true })
+    axios.post(`${API_URL}/api/admin/change-password`, { userId, password: newPassword }, { withCredentials: true })
       .then(() => {
         alert("Senha atualizada com sucesso.");
         setEditingUserId(null);
@@ -121,7 +122,7 @@ export default function AdminUsers() {
     }
     setCreatingUser(true);
     setCreateUserError(null);
-    axios.post("http://localhost:4000/api/admin/create-user", {
+    axios.post(`${API_URL}/api/admin/create-user`, {
       name: newUserName,
       email: newUserEmail,
       password: newUserPassword,

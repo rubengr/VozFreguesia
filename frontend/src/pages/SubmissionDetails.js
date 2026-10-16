@@ -15,11 +15,52 @@ import { useParams } from "react-router-dom";
 import { useContext, useState, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
 import axios from "axios";
+import { API_URL } from "../config";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 import Inline from "yet-another-react-lightbox/plugins/inline";
 import Fullscreen from "yet-another-react-lightbox/plugins/fullscreen";
 import Video from "yet-another-react-lightbox/plugins/video";
+
+// Tradução e cor de cada estado, para mostrar em português (não o valor em bruto da BD)
+const statusLabels = {
+  Pending: "Pendente",
+  "In Progress": "Em progresso",
+  Resolved: "Resolvida",
+  Rejected: "Rejeitada"
+};
+
+const statusColors = {
+  Pending: "#f59e0b",
+  "In Progress": "#3b82f6",
+  Resolved: "#10b981",
+  Rejected: "#ef4444"
+};
+
+// Traduz as ações do histórico de auditoria para português. Os valores em
+// `action` são identificadores internos em inglês (também usados para
+// cálculos nas Estatísticas), por isso a tradução só acontece aqui, na
+// apresentação - nunca nos dados guardados.
+const ACTION_LABELS = {
+  "Created": "Submissão criada",
+  "Reply": "Resposta adicionada",
+  "Status to Pending": "Estado alterado para Pendente",
+  "Status to In Progress": "Estado alterado para Em progresso",
+  "Status to Resolved": "Estado alterado para Resolvida",
+  "Status to Rejected": "Estado alterado para Rejeitada",
+  "Rejection proposed by president": "Rejeição proposta pelo presidente",
+  "Rejection proposal cancelled by president": "Proposta de rejeição cancelada pelo presidente",
+  "Confirmed rejection": "Rejeição confirmada",
+  "Rejection confirmed by assembly": "Rejeição confirmada pela assembleia",
+  // Nomes antigos, mantidos aqui para traduzir corretamente histórico já gravado
+  "Voted rejection": "Votou rejeição",
+  "Submission rejected (all assembly members)": "Submissão rejeitada (todos os membros da assembleia)",
+  "Submission rejected (all admins)": "Submissão rejeitada (todos os admins)"
+};
+
+function traduzirAcao(action) {
+  return ACTION_LABELS[action] || action;
+}
 
 export default function SubmissionDetails() {
   const { id } = useParams();
@@ -33,7 +74,7 @@ export default function SubmissionDetails() {
 
   useEffect(() => {
     setLoading(true);
-    axios.get(`http://localhost:4000/api/submissions/${id}`, { withCredentials: true })
+    axios.get(`${API_URL}/api/submissions/${id}`, { withCredentials: true })
       .then(res => {
         setSub(res.data);
         setLoading(false);
@@ -49,21 +90,21 @@ export default function SubmissionDetails() {
   }, [id]);
 
   const refresh = () => {
-    axios.get(`http://localhost:4000/api/submissions/${id}`, { withCredentials: true })
+    axios.get(`${API_URL}/api/submissions/${id}`, { withCredentials: true })
       .then(res => setSub(res.data))
       .catch(() => setError("Erro ao atualizar submissão"));
   };
 
   const sendReply = async () => {
     if (!reply.trim()) return;
-    await axios.post(`http://localhost:4000/api/submissions/${id}/reply`, { text: reply }, { withCredentials: true });
+    await axios.post(`${API_URL}/api/submissions/${id}/reply`, { text: reply }, { withCredentials: true });
     setReply('');
     refresh();
   };
 
   const changeStatus = async () => {
     if (!status) return;
-    await axios.post(`http://localhost:4000/api/submissions/${id}/status`, { status }, { withCredentials: true });
+    await axios.post(`${API_URL}/api/submissions/${id}/status`, { status }, { withCredentials: true });
     setStatus('');
     refresh();
   };
@@ -71,21 +112,21 @@ export default function SubmissionDetails() {
   // Confirma (vota) a proposta de rejeição em curso; depois de guardar,
   // atualiza também o sininho de notificações na navbar.
   const voteReject = async () => {
-    await axios.post(`http://localhost:4000/api/submissions/${id}/admin-vote-reject`, {}, { withCredentials: true });
+    await axios.post(`${API_URL}/api/submissions/${id}/admin-vote-reject`, {}, { withCredentials: true });
     refresh();
     refreshPendingRejections();
   };
 
   // Presidente propõe a rejeição desta submissão (fica à espera da assembleia)
   const proporRejeicao = async () => {
-    await axios.post(`http://localhost:4000/api/submissions/${id}/propose-rejection`, {}, { withCredentials: true });
+    await axios.post(`${API_URL}/api/submissions/${id}/propose-rejection`, {}, { withCredentials: true });
     refresh();
     refreshPendingRejections();
   };
 
   // Presidente desiste da proposta de rejeição antes de ser confirmada
   const cancelarProposta = async () => {
-    await axios.post(`http://localhost:4000/api/submissions/${id}/cancel-rejection-proposal`, {}, { withCredentials: true });
+    await axios.post(`${API_URL}/api/submissions/${id}/cancel-rejection-proposal`, {}, { withCredentials: true });
     refresh();
     refreshPendingRejections();
   };
@@ -99,7 +140,7 @@ export default function SubmissionDetails() {
   const slides = sub?.attachments
     .filter(file => mediaExtensions.includes(file.split('.').pop().toLowerCase()))
     .map(file => {
-      const url = `http://localhost:4000/uploads/${file}`;
+      const url = `${API_URL}/uploads/${file}`;
       const ext = file.split('.').pop().toLowerCase();
 
       if (["mp4", "webm", "ogg"].includes(ext)) {
@@ -116,7 +157,7 @@ export default function SubmissionDetails() {
   // Separar os arquivos que não serão exibidos na galeria para mostrar como links para download
   const filesForDownload = sub?.attachments
     .filter(file => !mediaExtensions.includes(file.split('.').pop().toLowerCase()))
-    .map(file => `http://localhost:4000/uploads/${file}`) || [];
+    .map(file => `${API_URL}/uploads/${file}`) || [];
 
   // Só chamamos "resposta ao presidente" se o presidente já tiver participado nesta submissão
   const presidentReplied = sub.replies.some(rep => rep.fromRole === "president");
@@ -164,13 +205,8 @@ export default function SubmissionDetails() {
         <p style={{ fontWeight: 600, marginTop: 14 }}>
           Status:{" "}
           <span className="badge" style={{
-            backgroundColor: {
-              Pending: "#f59e0b",
-              "In Progress": "#3b82f6",
-              Resolved: "#10b981",
-              Rejected: "#ef4444"
-            }[sub.status] || "#777"
-          }}>{sub.status}</span>
+            backgroundColor: statusColors[sub.status] || "#777"
+          }}>{statusLabels[sub.status] || sub.status}</span>
         </p>
 
         {/* Aviso visível a quem conseguiu mesmo assim abrir uma submissão rejeitada */}
@@ -207,7 +243,7 @@ export default function SubmissionDetails() {
           <ul style={{ paddingLeft: 20, maxHeight: 150, overflowY: "auto" }}>
             {sub.auditTrail.map((ev, i) =>
               <li key={i} style={{ marginBottom: 6, fontSize: 14, color: "#555" }}>
-                {ev.action} por {ev.user} — <em>{new Date(ev.timestamp).toLocaleString()}</em>
+                {traduzirAcao(ev.action)} por {ev.user} — <em>{new Date(ev.timestamp).toLocaleString()}</em>
               </li>
             )}
           </ul>

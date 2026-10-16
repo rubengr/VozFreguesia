@@ -15,6 +15,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { API_URL } from "../config";
 
 // Tradução e cor de cada estado, reutilizadas em vários pontos desta página
 const statusLabels = {
@@ -180,7 +181,7 @@ export default function Stats() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    axios.get("http://localhost:4000/api/submissions/all", { withCredentials: true })
+    axios.get(`${API_URL}/api/submissions/all`, { withCredentials: true })
       .then(res => setSubs(res.data))
       .catch(() => setError("Erro ao carregar estatísticas"));
   }, []);

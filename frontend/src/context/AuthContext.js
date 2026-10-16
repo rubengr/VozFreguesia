@@ -12,6 +12,7 @@
 
 import { createContext, useState, useEffect, useCallback } from "react";
 import axios from "axios";
+import { API_URL } from "../config";
 
 export const AuthContext = createContext();
 
@@ -34,7 +35,7 @@ export function AuthProvider({ children }) {
       setPendingRejections(0);
       return;
     }
-    axios.get("http://localhost:4000/api/submissions/all", { withCredentials: true })
+    axios.get(`${API_URL}/api/submissions/all`, { withCredentials: true })
       .then(res => {
         const count = res.data.filter(s =>
           s.status === "Pending" &&
@@ -51,7 +52,7 @@ export function AuthProvider({ children }) {
   // (se existir) ainda é válido, para restaurar a sessão sem precisar de
   // fazer login outra vez a cada refresh da página.
   useEffect(() => {
-    axios.get("http://localhost:4000/api/auth/me", { withCredentials: true })
+    axios.get(`${API_URL}/api/auth/me`, { withCredentials: true })
       .then(res => {
         const loadedUser = { id: res.data.id, name: res.data.name, role: res.data.role, email: res.data.email };
         setUser(loadedUser);
@@ -62,13 +63,13 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = async (email, password) => {
-    const res = await axios.post("http://localhost:4000/api/auth/login", { email, password }, { withCredentials: true });
+    const res = await axios.post(`${API_URL}/api/auth/login`, { email, password }, { withCredentials: true });
     const loadedUser = { id: res.data.id, email: res.data.email, role: res.data.role, name: res.data.name };
     setUser(loadedUser);
     refreshPendingRejections(loadedUser);
   };
   const logout = async () => {
-    await axios.post("http://localhost:4000/api/auth/logout", {}, { withCredentials: true });
+    await axios.post(`${API_URL}/api/auth/logout`, {}, { withCredentials: true });
     setUser(null);
     setPendingRejections(0);
   };

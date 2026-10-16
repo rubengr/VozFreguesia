@@ -13,6 +13,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { API_URL } from "../config";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -26,7 +27,7 @@ export default function ForgotPassword() {
     setError(null);
     setMessage(null);
     try {
-      const res = await axios.post("http://localhost:4000/api/auth/forgot-password", { email });
+      const res = await axios.post(`${API_URL}/api/auth/forgot-password`, { email });
       setMessage(res.data.message || "Se o email existir, foi enviado um link de recuperação.");
     } catch {
       setError("Erro ao pedir recuperação de password. Tente novamente.");

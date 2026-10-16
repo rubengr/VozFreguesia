@@ -6,6 +6,8 @@ Arquitetura:
 - **Backend**: Node.js + Express + MongoDB (Mongoose), autenticação por cookie JWT.
 - **Frontend**: React (Create React App) + React Router + Axios.
 
+> Para publicar a aplicação online (ex: para outras pessoas testarem), veja [DEPLOY.md](DEPLOY.md).
+
 ---
 
 ## Pré-requisitos

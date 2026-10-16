@@ -13,6 +13,7 @@ import { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_URL } from "../config";
 
 export default function Register() {
   const { login } = useContext(AuthContext); // Caso queira login imediato após registo
@@ -37,7 +38,7 @@ export default function Register() {
     setError(null);
     setSubmitting(true);
     try {
-      await axios.post("http://localhost:4000/api/auth/register", {
+      await axios.post(`${API_URL}/api/auth/register`, {
         name, email, password
       });
       // Opcional: login automático após registo

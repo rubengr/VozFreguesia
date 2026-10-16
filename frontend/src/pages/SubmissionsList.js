@@ -14,6 +14,7 @@ import { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
+import { API_URL } from "../config";
 
 // Só quem gere a freguesia (não um residente comum) vê submissões rejeitadas
 const PRIVILEGED_ROLES = ["president", "admin", "assembly"];
@@ -28,7 +29,7 @@ export default function SubmissionsList() {
 
   useEffect(() => {
     setLoading(true);
-    axios.get("http://localhost:4000/api/submissions/all", { withCredentials: true })
+    axios.get(`${API_URL}/api/submissions/all`, { withCredentials: true })
       .then(res => {
         setSubs(res.data);
         setLoading(false);
